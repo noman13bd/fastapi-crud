@@ -4,25 +4,43 @@ services:
   web:
     build: ./src
     command: |
-      bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000'
+      bash -c 'uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000'
     volumes:
       - ./src/:/usr/src/app/
     ports:
       - 8002:8000
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
     environment:
-      - DATABASE_URL=postgresql://fastapi_crud:fastapi_crud@db/fastapi_crud
+      - DATABASE_URL=mysql+pymysql://fastapi_crud:fastapi_crud@db:3306/fastapi_crud
+  # db:
+  #   image: postgres:15.1-alpine
+  #   volumes:
+  #     - /var/lib/docker/volumes/fastapi-crud-pgsql/_data:/var/lib/postgresql/data/
+  #   ports:
+  #     - 5430:5432
+  #   expose:
+  #     - 5432
+  #   environment:
+  #     - POSTGRES_USER=fastapi_crud
+  #     - POSTGRES_PASSWORD=fastapi_crud
+  #     - POSTGRES_DB=fastapi_crud
   db:
-    image: postgres:15.1-alpine
+    image: mysql:5.7.36
     volumes:
-      - /var/lib/docker/volumes/fastapi-crud-pgsql/_data:/var/lib/postgresql/data/
+      - /var/lib/docker/volumes/vol-mysql4/_data:/var/lib/mysql
     ports:
-      - 5430:5432
+      - 0.0.0.0:6034:3306
     expose:
-      - 5432
+      - 3306
     environment:
-      - POSTGRES_USER=fastapi_crud
-      - POSTGRES_PASSWORD=fastapi_crud
-      - POSTGRES_DB=fastapi_crud
-
-volumes:
-  postgres_data:
+      - MYSQL_USER=fastapi_crud
+      - MYSQL_PASSWORD=fastapi_crud
+      - MYSQL_DATABASE=fastapi_crud
+      - MYSQL_ROOT_PASSWORD=fastapi_crud_root
+    healthcheck:
+      test: ["CMD", 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD']
+      timeout: 20s
+      retries: 10
