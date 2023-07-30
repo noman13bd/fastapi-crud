@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.api import health, notes
+from app.api import health, notes, es
 from app.db import engine, database, metadata
 
 metadata.create_all(engine)
@@ -20,3 +20,4 @@ async def shutdown():
 
 app.include_router(health.router)
 app.include_router(notes.router, prefix="/notes", tags=["notes"])
+app.include_router(es.router, prefix="/es", tags=["es"])
