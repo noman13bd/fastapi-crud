@@ -16,7 +16,7 @@ services:
     environment:
       - DATABASE_URL=mysql+pymysql://fastapi_crud:fastapi_crud@db:3306/fastapi_crud
     networks:
-      - es-docker_my-elastic
+      - fastcrud
   # db:
   #   image: postgres:15.1-alpine
   #   volumes:
@@ -47,16 +47,12 @@ services:
       timeout: 20s
       retries: 10
     networks:
-      - es-docker_my-elastic
+      - fastcrud
 
+networks:
+  fastcrud:
+    external:
+      name: es-docker_my-elastic
 # networks:
 #   es-docker_my-elastic:
 #     external: true
-
-# networks:
-#   fastcrud:
-#     external:
-#       name: es-docker_my-elastic
-networks:
-  es-docker_my-elastic:
-    external: true
